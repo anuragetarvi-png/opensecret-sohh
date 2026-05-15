@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Open Secret — Sales Visit Entry</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #1a1a1a; }
+  .app { max-width: 520px; margin: 0 auto; background: #fff; min-height: 100vh; padding: 1.25rem 1.25rem 2rem; }
+
+  .header { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #e5e5e5; }
+  .header-logo { width: 40px; height: 40px; background: #1F4E79; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+  .header-title { font-size: 17px; font-weight: 600; color: #1a1a1a; }
+  .header-sub { font-size: 12px; color: #888; margin-top: 1px; }
+  .live-dot { display: inline-block; width: 7px; height: 7px; background: #22c55e; border-radius: 50%; margin-right: 4px; }
+
+  .section-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 12px; padding: 1rem 1rem 0.5rem; margin-bottom: 1rem; }
+  .section-card-title { font-size: 11px; font-weight: 700; color: #1F4E79; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 0.75rem; }
+
+  .field-label { font-size: 12px; color: #555; margin-bottom: 5px; display: block; font-weight: 500; }
+  .field-row { margin-bottom: 14px; }
+  input[type="text"], input[type="date"], input[type="tel"], select {
+    width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px;
+    font-size: 15px; color: #1a1a1a; background: #fafafa; outline: none; appearance: none;
+  }
+  input:focus, select:focus { border-color: #1F4E79; background: #fff; }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px;
+  }
+  select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .gps-box { border: 1px solid #ddd; border-radius: 8px; padding: 10px 12px; background: #fafafa; display: flex; align-items: center; gap: 10px; }
+  .gps-dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; flex-shrink: 0; }
+  .gps-dot.acquiring { background: #f59e0b; animation: pulse 1s infinite; }
+  .gps-dot.got { background: #22c55e; }
+  .gps-dot.failed { background: #ef4444; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+  .gps-text { font-size: 13px; color: #555; flex: 1; }
+  .gps-link { font-size: 12px; color: #1F4E79; text-decoration: none; font-weight: 500; }
+
+  /* SKU TABLE */
+  .sku-section-title { font-size: 10px; font-weight: 700; color: #999; letter-spacing: 0.08em; text-transform: uppercase; margin: 0.75rem 0 6px; padding-bottom: 5px; border-bottom: 1px solid #f0f0f0; }
+  .sku-table-header { display: grid; grid-template-columns: 1fr 72px 72px; gap: 6px; padding: 5px 0; margin-bottom: 2px; }
+  .sku-table-header span { font-size: 11px; font-weight: 600; color: #888; text-align: center; }
+  .sku-table-header span:first-child { text-align: left; }
+  .sku-row { display: grid; grid-template-columns: 1fr 72px 72px; gap: 6px; align-items: center; padding: 5px 0; border-bottom: 1px solid #f5f5f5; }
+  .sku-row:last-child { border-bottom: none; }
+  .sku-name { font-size: 12px; color: #333; line-height: 1.4; }
+  .sku-input { width: 100%; padding: 6px 4px; border: 1px solid #ddd; border-radius: 7px; font-size: 14px; text-align: center; color: #1a1a1a; background: #fafafa; outline: none; }
+  .sku-input:focus { border-color: #1F4E79; background: #fff; }
+  .sku-input.ordered-input:focus { border-color: #059669; background: #f0fdf4; }
+
+  .total-bar { background: #f0f4f8; border-radius: 10px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; gap: 10px; }
+  .total-item { text-align: center; }
+  .total-label { font-size: 11px; color: #666; }
+  .total-value { font-size: 18px; font-weight: 700; }
+  .total-value.soh { color: #1F4E79; }
+  .total-value.ord { color: #059669; }
+
+  .btn-submit { width: 100%; padding: 14px; font-size: 16px; font-weight: 600; background: #1F4E79; color: #fff; border: none; border-radius: 10px; cursor: pointer; margin-top: 1.25rem; }
+  .btn-submit:active { background: #163d61; }
+  .btn-submit:disabled { background: #93c5fd; cursor: not-allowed; }
+  .btn-clear { width: 100%; padding: 12px; font-size: 14px; background: transparent; color: #555; border: 1px solid #ddd; border-radius: 10px; cursor: pointer; margin-top: 8px; }
+  .btn-clear:active { background: #f5f5f5; }
+
+  .toast { display: none; padding: 12px 16px; border-radius: 10px; font-size: 14px; margin-top: 14px; text-align: center; font-weight: 500; }
+  .toast.success { background: #dcfce7; color: #15803d; display: block; }
+  .toast.error { background: #fee2e2; color: #dc2626; display: block; }
+
+  .required { color: #dc2626; margin-left: 2px; }
+  .footer { font-size: 11px; color: #bbb; text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #f0f0f0; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="header-logo">OS</div>
+    <div>
+      <div class="header-title"><span class="live-dot"></span>Sales Visit Entry</div>
+      <div class="header-sub">Open Secret — Field Data Collection</div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: Visit Info -->
+  <div class="section-card">
+    <div class="section-card-title">📅 Visit Info</div>
+    <div class="field-row">
+      <label class="field-label">Date <span class="required">*</span></label>
+      <input type="date" id="visitDate" />
+    </div>
+    <div class="field-row">
+      <label class="field-label">Sales Officer Name <span class="required">*</span></label>
+      <select id="officerName" onchange="onOfficerChange()">
+        <option value="" disabled selected>Select officer...</option>
+        <option value="Satish">Satish</option>
+        <option value="Suman">Suman</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="field-row">
+      <label class="field-label">GPS Location</label>
+      <div class="gps-box">
+        <div class="gps-dot acquiring" id="gpsDot"></div>
+        <span class="gps-text" id="gpsText">Acquiring location...</span>
+        <a class="gps-link" id="gpsLink" href="#" target="_blank" style="display:none;">View Map</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: Outlet Details -->
+  <div class="section-card">
+    <div class="section-card-title">🏪 Outlet Details</div>
+
+    <div class="field-row">
+      <label class="field-label">Outlet Area <span class="required">*</span></label>
+      <select id="outletArea" onchange="onAreaChange()" disabled>
+        <option value="" disabled selected>Select area...</option>
+      </select>
+    </div>
+
+    <!-- Other area text input -->
+    <div class="field-row hidden" id="otherAreaRow">
+      <label class="field-label">Enter Area <span class="required">*</span></label>
+      <input type="text" id="otherAreaText" placeholder="Type area name..." />
+    </div>
+
+    <div class="field-row">
+      <label class="field-label">Outlet Name <span class="required">*</span></label>
+      <select id="outletName" disabled>
+        <option value="" disabled selected>Select outlet...</option>
+      </select>
+    </div>
+
+    <div class="field-row">
+      <label class="field-label">POC Name</label>
+      <input type="text" id="pocName" placeholder="Contact person name..." />
+    </div>
+    <div class="field-row">
+      <label class="field-label">POC Number</label>
+      <input type="tel" id="pocNumber" placeholder="10-digit mobile number..." />
+    </div>
+    <div class="field-row">
+      <label class="field-label">Inventory at Outlet <span class="required">*</span></label>
+      <select id="inventoryAtOutlet">
+        <option value="" disabled selected>Select...</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+    </div>
+    <div class="field-row">
+      <label class="field-label">Ordered <span class="required">*</span></label>
+      <select id="orderedYN">
+        <option value="" disabled selected>Select...</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- SECTION 3: SOH + Order -->
+  <div class="section-card">
+    <div class="section-card-title">📦 Stock on Hand & Order</div>
+
+    <div class="sku-table-header">
+      <span>SKU</span>
+      <span style="color:#1F4E79;">SOH</span>
+      <span style="color:#059669;">Ordered</span>
+    </div>
+
+    <div class="sku-section-title">Story Boxes</div>
+    <div id="skus-story"></div>
+
+    <div class="sku-section-title">Nutty Cookies /35</div>
+    <div id="skus-cookies35"></div>
+
+    <div class="sku-section-title">Nutty Cookies /42</div>
+    <div id="skus-cookies42"></div>
+
+    <div class="sku-section-title">Veggie Chips</div>
+    <div id="skus-chips"></div>
+
+    <div class="sku-section-title">Bhujia</div>
+    <div id="skus-bhujia"></div>
+
+    <div class="sku-section-title">Biscuits</div>
+    <div id="skus-biscuits"></div>
+
+    <div class="total-bar">
+      <div class="total-item">
+        <div class="total-label">Total SOH</div>
+        <div class="total-value soh" id="totalSOH">0</div>
+      </div>
+      <div style="width:1px;background:#ddd;align-self:stretch;"></div>
+      <div class="total-item">
+        <div class="total-label">Total Ordered</div>
+        <div class="total-value ord" id="totalOrdered">0</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-submit" id="submitBtn" onclick="submitData()">Submit to Google Sheet</button>
+  <button class="btn-clear" onclick="resetForm()">Clear form</button>
+  <div class="toast" id="toast"></div>
+  <div class="footer">Open Secret Sales Tool &nbsp;·&nbsp; v4.0</div>
+</div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw3-c7Mz_DNLVDaU20ncNqpOgPJCdsQkBPNA0vUK3dEOP8tmZdAjOe0OY2HyztHQSJD/exec";
+
+const AREA_DATA = {
+  Satish: {
+    Ghatkopar:  ['Siddham Foods (Shivam)', 'Chedda Grain & Provision Stores', 'Jolly Emporium'],
+    Kurla:      ['U.S Retails LLP', 'Sheetal Dry Fruits', 'Curewell Pharmacy'],
+    Chembur:    ['Ratna Departmental Stores Pvt. Ltd-Chembur', 'Gada Medical & Mini Mart', 'Variety Store', 'Gurunanak Super Mart', 'Aayushi Super Shop', 'Swastik Super Shoppy', 'Janata Masala', 'Channel The Gift Shoppy'],
+    Chandivali: ['Walk 2 Mart Super Market'],
+    Powai:      ['Jalaram Dry Fruits', 'D H Mart', 'Beyond Printz', 'Tanisha Super Market'],
+    Mulund:     ['V . K. Foods', 'Navkar Dryfruits & Sweets', 'Gala Food Corner', 'Ratna Supermarket-Mulund', 'All Season', 'Hari Om Sweets - Mulund West', 'Hari Om Dry Fruits & Sweets - Mulund East'],
+  },
+  Suman: {
+    'South Bombay': ['A', 'B', 'C'],
+  },
+  Other: {}
+};
+
+const SKUS = {
+  "skus-story": [
+    "OS Assorted Story Box*6 Nutty Cookies75g/105",
+    "OS Choco Almond Story Box*6 Nutty Cookies75g/105",
+    "OS White Choco Cashew Story Box*6 Cookies75g/105",
+    "OS Peanut Butter Story Box*6 Nutty Cookies75g/105"
+  ],
+  "skus-cookies35": [
+    "OS Choco Almond Nutty Cookies*2/35",
+    "OS White Choco Cashew Nutty Cookies*2/35",
+    "OS Peanut Butter Nutty Cookies*2/35"
+  ],
+  "skus-cookies42": [
+    "OS Choco Almond Nutty Cookies*2/42",
+    "OS White Choco Cashew Nutty Cookies*2/42",
+    "OS Peanut Butter Nutty Cookies*2/42"
+  ],
+  "skus-chips": [
+    "OS Unjunked Veggie Spinach Chips 40g/55",
+    "OS Unjunked Veggie Beetroot Chips40g/55",
+    "OS Unjunked Veggie Mix Veg Chips40g/55"
+  ],
+  "skus-bhujia": [
+    "OS Unjunked Moth Bhujia 175g/199"
+  ],
+  "skus-biscuits": [
+    "OS Unjunked Jeera Biscuit (Pack of 4)28g/25",
+    "OS Unjunked Chocolate Biscuit (Pack of 4)28g/25",
+    "OS Unjunked Butter Biscuit (Pack of 4)28g/25",
+    "OS Unjunked Digestive Biscuit 200g/60",
+    "OS Unjunked Almond Biscuit (Pack of 4)28g/25"
+  ]
+};
+
+const ALL_SKUS = Object.values(SKUS).flat();
+let gpsCoords = null;
+
+function shortName(s) {
+  return s.replace("OS Unjunked ", "").replace("OS ", "");
+}
+
+function buildSKUs() {
+  Object.entries(SKUS).forEach(([id, list]) => {
+    const container = document.getElementById(id);
+    list.forEach(sku => {
+      const row = document.createElement("div");
+      row.className = "sku-row";
+      const safe = sku.replace(/[^a-z0-9]/gi, "_");
+      row.innerHTML = `
+        <label class="sku-name">${shortName(sku)}</label>
+        <input class="sku-input" type="number" min="0" value="0"
+          data-sku="${sku}" data-type="soh" oninput="updateTotals()" />
+        <input class="sku-input ordered-input" type="number" min="0" value="0"
+          data-sku="${sku}" data-type="order" oninput="updateTotals()" />`;
+      container.appendChild(row);
+    });
+  });
+}
+
+function updateTotals() {
+  let soh = 0, ord = 0;
+  document.querySelectorAll("input[data-type='soh']").forEach(i => soh += parseInt(i.value)||0);
+  document.querySelectorAll("input[data-type='order']").forEach(i => ord += parseInt(i.value)||0);
+  document.getElementById("totalSOH").textContent = soh;
+  document.getElementById("totalOrdered").textContent = ord;
+}
+
+function onOfficerChange() {
+  const officer = document.getElementById("officerName").value;
+  const areaSelect = document.getElementById("outletArea");
+  const otherRow = document.getElementById("otherAreaRow");
+  const outletSelect = document.getElementById("outletName");
+
+  // Reset area and outlet
+  areaSelect.innerHTML = '<option value="" disabled selected>Select area...</option>';
+  outletSelect.innerHTML = '<option value="" disabled selected>Select outlet...</option>';
+  outletSelect.disabled = true;
+  otherRow.classList.add("hidden");
+
+  if (officer === "Other") {
+    areaSelect.disabled = true;
+    otherRow.classList.remove("hidden");
+    outletSelect.disabled = false;
+    outletSelect.innerHTML = '<option value="" disabled selected>Type outlet name above first</option>';
+  } else {
+    areaSelect.disabled = false;
+    const areas = Object.keys(AREA_DATA[officer] || {});
+    areas.forEach(area => {
+      const opt = document.createElement("option");
+      opt.value = area; opt.textContent = area;
+      areaSelect.appendChild(opt);
+    });
+  }
+}
+
+function onAreaChange() {
+  const officer = document.getElementById("officerName").value;
+  const area = document.getElementById("outletArea").value;
+  const outletSelect = document.getElementById("outletName");
+
+  outletSelect.innerHTML = '<option value="" disabled selected>Select outlet...</option>';
+  outletSelect.disabled = false;
+
+  const stores = (AREA_DATA[officer] || {})[area] || [];
+  stores.forEach(store => {
+    const opt = document.createElement("option");
+    opt.value = store; opt.textContent = store;
+    outletSelect.appendChild(opt);
+  });
+}
+
+function getArea() {
+  const officer = document.getElementById("officerName").value;
+  if (officer === "Other") return document.getElementById("otherAreaText").value.trim();
+  return document.getElementById("outletArea").value;
+}
+
+function getOutlet() {
+  const officer = document.getElementById("officerName").value;
+  if (officer === "Other") return document.getElementById("outletName").value || document.getElementById("otherAreaText").value.trim();
+  return document.getElementById("outletName").value;
+}
+
+function acquireGPS() {
+  if (!navigator.geolocation) { setGPSStatus("failed","GPS not supported",null); return; }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const lat = pos.coords.latitude.toFixed(6);
+      const lng = pos.coords.longitude.toFixed(6);
+      gpsCoords = {lat, lng};
+      setGPSStatus("got", `${lat}, ${lng}`, `https://www.google.com/maps?q=${lat},${lng}`);
+    },
+    () => setGPSStatus("failed","Location access denied — enable GPS",null),
+    {enableHighAccuracy:true, timeout:15000, maximumAge:0}
+  );
+}
+
+function setGPSStatus(state, text, url) {
+  document.getElementById("gpsDot").className = "gps-dot " + state;
+  document.getElementById("gpsText").textContent = text;
+  const link = document.getElementById("gpsLink");
+  if (url) { link.href = url; link.style.display = "inline"; }
+  else link.style.display = "none";
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.className = "toast " + type;
+  setTimeout(() => t.className = "toast", 5000);
+}
+
+function resetForm() {
+  document.getElementById("officerName").selectedIndex = 0;
+  document.getElementById("outletArea").innerHTML = '<option value="" disabled selected>Select area...</option>';
+  document.getElementById("outletArea").disabled = true;
+  document.getElementById("outletName").innerHTML = '<option value="" disabled selected>Select outlet...</option>';
+  document.getElementById("outletName").disabled = true;
+  document.getElementById("otherAreaRow").classList.add("hidden");
+  document.getElementById("otherAreaText").value = "";
+  document.getElementById("pocName").value = "";
+  document.getElementById("pocNumber").value = "";
+  document.getElementById("inventoryAtOutlet").selectedIndex = 0;
+  document.getElementById("orderedYN").selectedIndex = 0;
+  document.querySelectorAll("input[data-type]").forEach(i => i.value = 0);
+  updateTotals();
+  setToday();
+  gpsCoords = null;
+  setGPSStatus("acquiring","Acquiring location...",null);
+  acquireGPS();
+}
+
+function setToday() {
+  const d = new Date();
+  document.getElementById("visitDate").value =
+    `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+function submitData() {
+  const date     = document.getElementById("visitDate").value;
+  const officer  = document.getElementById("officerName").value;
+  const area     = getArea();
+  const outlet   = getOutlet();
+  const poc      = document.getElementById("pocName").value.trim();
+  const pocNum   = document.getElementById("pocNumber").value.trim();
+  const inventory= document.getElementById("inventoryAtOutlet").value;
+  const orderedYN= document.getElementById("orderedYN").value;
+
+  if (!officer)  { showToast("Please select Sales Officer.", "error"); return; }
+  if (!area)     { showToast("Please select/enter Outlet Area.", "error"); return; }
+  if (!outlet)   { showToast("Please select Outlet Name.", "error"); return; }
+  if (!inventory){ showToast("Please select Inventory at Outlet.", "error"); return; }
+  if (!orderedYN){ showToast("Please select Ordered.", "error"); return; }
+
+  const gpsValue = gpsCoords
+    ? `https://www.google.com/maps?q=${gpsCoords.lat},${gpsCoords.lng}`
+    : "Location unavailable";
+  const submitTime = new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit",hour12:true});
+
+  const sohVals   = ALL_SKUS.map(s => parseInt(document.querySelector(`input[data-sku="${s}"][data-type="soh"]`)?.value)||0);
+  const orderVals = ALL_SKUS.map(s => parseInt(document.querySelector(`input[data-sku="${s}"][data-type="order"]`)?.value)||0);
+
+  const row = [date, submitTime, officer, area, outlet, poc, pocNum, gpsValue, inventory, orderedYN, ...sohVals, ...orderVals];
+
+  const btn = document.getElementById("submitBtn");
+  btn.disabled = true; btn.textContent = "Submitting...";
+
+  const params = new URLSearchParams();
+  params.append("row", JSON.stringify(row));
+
+  fetch(SCRIPT_URL, {
+    method: "POST", mode: "no-cors",
+    headers: {"Content-Type":"application/x-www-form-urlencoded"},
+    body: params.toString()
+  })
+  .then(() => { showToast("✓ Submitted successfully!", "success"); resetForm(); })
+  .catch(() => showToast("Submission failed. Check internet connection.", "error"))
+  .finally(() => { btn.disabled = false; btn.textContent = "Submit to Google Sheet"; });
+}
+
+buildSKUs();
+setToday();
+acquireGPS();
+</script>
+</body>
+</html>
